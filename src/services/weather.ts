@@ -220,41 +220,14 @@ class WeatherService {
   }
 
   /**
-   * Get the latest RainViewer radar timestamp
+   * Get weather radar tile URL for map overlay
+   * Using OpenWeatherMap precipitation layer for consistency
    */
-  async getLatestRadarTimestamp(): Promise<number | null> {
-    try {
-      const response = await fetch('https://api.rainviewer.com/public/weather-maps.json');
-      if (!response.ok) return null;
-      
-      const data = await response.json();
-      // Get the most recent radar timestamp
-      if (data.radar && data.radar.past && data.radar.past.length > 0) {
-        return data.radar.past[data.radar.past.length - 1].time;
-      }
-      return null;
-    } catch (error) {
-      console.error('Failed to fetch radar timestamp:', error);
-      return null;
-    }
-  }
-
-  /**
-   * Get weather radar tile URL for map overlay with dynamic timestamp
-   * RainViewer provides free radar tiles
-   */
-  async getRadarTileUrl(): Promise<string> {
+  getRadarTileUrl(): string {
     if (!this.apiKey) {
       return '';
     }
-    
-    const timestamp = await this.getLatestRadarTimestamp();
-    if (!timestamp) {
-      // Fallback to OpenWeatherMap precipitation layer if RainViewer is unavailable
-      return `https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid=demo`;
-    }
-    
-    return `https://tilecache.rainviewer.com/v2/radar/${timestamp}/{z}/{x}/{y}/256/1_1.png`;
+    return `https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid=demo`;
   }
 
   /**

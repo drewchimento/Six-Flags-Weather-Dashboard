@@ -66,7 +66,6 @@ export function InteractiveMap({
   const [weatherData, setWeatherData] = useState<Record<string, WeatherForecast>>({});
   const [weatherLoading, setWeatherLoading] = useState(false);
   const [weatherError, setWeatherError] = useState<string | null>(null);
-  const [radarTileUrl, setRadarTileUrl] = useState<string>('');
 
   // Center of the US for initial view
   const center: [number, number] = [39.8283, -98.5795];
@@ -76,11 +75,6 @@ export function InteractiveMap({
     const apiKey = storageService.getWeatherApiKey();
     if (apiKey) {
       weatherService.setApiKey(apiKey);
-    }
-
-    // Fetch radar tile URL when weather radar is enabled
-    if (showWeatherRadar && weatherService.isConfigured()) {
-      fetchRadarUrl();
     }
 
     // Only fetch if weather features are enabled AND API key is configured
@@ -95,17 +89,6 @@ export function InteractiveMap({
       setWeatherError(null);
     }
   }, [showForecast, showWeatherRadar, parks]);
-
-  const fetchRadarUrl = async () => {
-    try {
-      const url = await weatherService.getRadarTileUrl();
-      setRadarTileUrl(url);
-    } catch (error) {
-      console.error('Error fetching radar tile URL:', error);
-      // Fallback to OpenWeatherMap precipitation layer
-      setRadarTileUrl('https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid=demo');
-    }
-  };
 
   const fetchWeatherData = async () => {
     setWeatherLoading(true);
@@ -169,12 +152,12 @@ export function InteractiveMap({
             />
           </LayersControl.BaseLayer>
 
-          {showWeatherRadar && weatherService.isConfigured() && radarTileUrl && (
+          {showWeatherRadar && weatherService.isConfigured() && (
             <>
               <LayersControl.Overlay checked name="Weather Radar (Precipitation)">
                 <TileLayer
-                  url={radarTileUrl}
-                  attribution='Weather data &copy; RainViewer'
+                  url={weatherService.getRadarTileUrl()}
+                  attribution='Weather data &copy; OpenWeatherMap'
                   opacity={0.6}
                 />
               </LayersControl.Overlay>
